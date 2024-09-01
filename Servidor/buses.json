@@ -1,0 +1,52 @@
+{
+  "buses": [
+    {
+      "placa": "XYZ789",
+      "registros": [
+        {
+          "ordenRegistro": 1,
+          "horaLlegada": "09:30"
+        }
+      ],
+      "ediciones": 0
+    },
+    {
+      "placa": "PLM123",
+      "registros": [
+        {
+          "ordenRegistro": 1,
+          "horaLlegada": "13:50"
+        }
+      ],
+      "ediciones": 0
+    },
+    {
+      "placa": "IOP789",
+      "registros": [
+        {
+          "ordenRegistro": 1,
+          "horaLlegada": "13:07"
+        },
+        {
+          "ordenRegistro": 2,
+          "horaLlegada": "15:24"
+        }
+      ],
+      "ediciones": 1
+    },
+    {
+      "placa": "XXX222",
+      "registros": [
+        {
+          "ordenRegistro": 1,
+          "horaLlegada": "17:13"
+        },
+        {
+          "ordenRegistro": 2,
+          "horaLlegada": "21:01"
+        }
+      ],
+      "ediciones": 1
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Buses Transmilenio</title>
+    <script src="app.js" defer></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header>
+        <img src="Imagen/logoremo.png" alt="Logo Transmilenio">
+        <h1>Registro de Buses Transmilenio</h1>
+    </header>
+
+    <form id="busForm">
+        <h2>Registrar/Actualizar Bus</h2>
+        <div class="form-group">
+            <label for="placa">Placa:</label>
+            <input type="text" id="placa" pattern="[A-Z]{3}[0-9]{3}" title="Debe tener 3 letras seguidas de 3 números"
+                required>
+        </div>
+        <div class="form-group">
+            <label for="horaLlegada">Hora de Llegada:</label>
+            <input type="time" id="horaLlegada" required>
+        </div>
+        <button type="submit">Registrar/Actualizar</button>
+    </form>
+
+    <form id="borrarForm">
+        <h2>Borrar Bus</h2>
+        <div class="form-group">
+            <label for="placaBorrar">Placa:</label>
+            <input type="text" id="placaBorrar" pattern="[A-Z]{3}[0-9]{3}"
+                title="Debe tener 3 letras seguidas de 3 números" required>
+        </div>
+        <button type="submit">Borrar</button>
+    </form>
+
+    <form id="buscarForm">
+        <h2>Buscar Bus</h2>
+        <div class="form-group">
+            <label for="placaBuscar">Placa:</label>
+            <input type="text" id="placaBuscar" pattern="[A-Z]{3}[0-9]{3}"
+                title="Debe tener 3 letras seguidas de 3 números" required>
+        </div>
+        <button type="submit">Buscar</button>
+    </form>
+
+    <button id="mostrarRegistros">Mostrar registro total de buses</button>
+
+    <div id="resultado"></div>
+</body>
+
+</html>
