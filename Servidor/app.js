@@ -43,7 +43,7 @@ app.post('/buses', (req, res) => {
             ordenRegistro: bus.registros.length + 1, 
             horaLlegada: horaLlegada
         });
-        bus.ediciones += 1; // Incrementar el contador de ediciones
+        bus.ediciones += 1;
     } else {
         
         buses.buses.push({
