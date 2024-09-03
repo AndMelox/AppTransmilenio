@@ -1,102 +1,93 @@
-document.addEventListener("DOMContentLoaded", () => {
-    fetch("/config.json")
-        .then(response => response.json())
-        .then(config => {
-            const serverUrl = `http://${config.ip}:${config.port}`;
+const express = require('express');
+const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
 
-            const placaInputs = document.querySelectorAll("#placa, #placaBorrar, #placaBuscar");
-            placaInputs.forEach((input) => {
-                input.addEventListener("input", () => {
-                    input.value = input.value.toUpperCase();
-                });
-            });
+const app = express();
+const port = 3000;
 
-            const busForm = document.getElementById("busForm");
-            const borrarForm = document.getElementById("borrarForm");
-            const buscarForm = document.getElementById("buscarForm");
-            const resultado = document.getElementById("resultado");
-            const mostrarRegistros = document.getElementById("mostrarRegistros");
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, '../Cliente'))); // Servir archivos estáticos desde la carpeta del cliente
 
-            busForm.addEventListener("submit", (e) => {
-                e.preventDefault();
-                const placa = document.getElementById("placa").value;
-                const horaLlegada = document.getElementById("horaLlegada").value;
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../Cliente/index.html'));
+});
 
-                fetch(`${serverUrl}/buses`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ placa, horaLlegada }),
-                })
-                    .then((response) => response.text())
-                    .then((data) => {
-                        alert(data);
-                        busForm.reset();
-                    })
-                    .catch((error) => console.error("Error:", error));
-            });
+app.get('/buses', (req, res) => {
+    const buses = leerBuses();
+    res.status(200).json(buses);
+});
 
-            borrarForm.addEventListener("submit", (e) => {
-                e.preventDefault();
-                const placa = document.getElementById("placaBorrar").value;
+function leerBuses() {
+    const data = fs.readFileSync('buses.json', 'utf8');
+    return JSON.parse(data);
+}
 
-                fetch(`${serverUrl}/buses/${placa}`, {
-                    method: "DELETE",
-                })
-                    .then((response) => response.text())
-                    .then((data) => {
-                        alert(data);
-                        borrarForm.reset();
-                    })
-                    .catch((error) => console.error("Error:", error));
-            });
+function escribirBuses(buses) {
+    fs.writeFileSync('buses.json', JSON.stringify(buses, null, 2));
+}
 
-            buscarForm.addEventListener("submit", (e) => {
-                e.preventDefault();
-                const placa = document.getElementById("placaBuscar").value;
+app.post('/buses', (req, res) => {
+    const { placa, horaLlegada } = req.body;
 
-                fetch(`${serverUrl}/buses/${placa}`)
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw new Error("Bus no encontrado.");
-                        }
-                        return response.json();
-                    })
-                    .then((bus) => {
-                        const registros = bus.registros
-                            .map((reg) => `Orden ${reg.ordenRegistro}: ${reg.horaLlegada}`)
-                            .join("<br>");
-                        resultado.innerHTML = `Placa: ${bus.placa}<br>Registros:<br>${registros}<br>Ediciones: ${bus.ediciones}`;
-                        buscarForm.reset();
-                    })
-                    .catch((error) => {
-                        console.error("Error:", error);
-                        resultado.innerHTML = "Bus no encontrado.";
-                    });
-            });
+    if (!placa || !horaLlegada) {
+        return res.status(400).send('Placa y hora de llegada son requeridos.');
+    }
 
-            mostrarRegistros.addEventListener("click", () => {
-                fetch(`${serverUrl}/buses`)
-                    .then((response) => response.json())
-                    .then((buses) => {
-                        const registros = buses.buses
-                            .map(
-                                (bus) =>
-                                    `Placa: ${bus.placa}<br>` +
-                                    `Registros:<br>${bus.registros
-                                        .map((reg) => `Orden ${reg.ordenRegistro}: ${reg.horaLlegada}`)
-                                        .join("<br>")}<br>` +
-                                    `Ediciones: ${bus.ediciones}`
-                            )
-                            .join("<br><br>");
-                        resultado.innerHTML = registros;
-                    })
-                    .catch((error) => {
-                        console.error("Error:", error);
-                        resultado.innerHTML = "Error al cargar los registros.";
-                    });
-            });
-        })
-        .catch(error => console.error("Error al cargar la configuración:", error));
+    const buses = leerBuses();
+    let bus = buses.buses.find(b => b.placa === placa);
+
+    if (bus) {
+        // El bus ya existe, actualizamos su hora de llegada
+        bus.registros.push({
+            ordenRegistro: bus.registros.length + 1, // Incrementar el orden de registro
+            horaLlegada: horaLlegada
+        });
+        bus.ediciones += 1; // Incrementar el contador de ediciones
+    } else {
+        // Registrar un nuevo bus
+        buses.buses.push({
+            placa: placa,
+            registros: [{
+                ordenRegistro: 1,
+                horaLlegada: horaLlegada
+            }],
+            ediciones: 0
+        });
+    }
+
+    escribirBuses(buses);
+    res.status(200).send('Bus registrado/actualizado correctamente.');
+});
+
+app.delete('/buses/:placa', (req, res) => {
+    const { placa } = req.params;
+
+    const buses = leerBuses();
+    const index = buses.buses.findIndex(b => b.placa === placa);
+
+    if (index === -1) {
+        return res.status(404).send('Bus no encontrado.');
+    }
+
+    buses.buses.splice(index, 1);
+    escribirBuses(buses);
+    res.status(200).send('Bus borrado correctamente.');
+});
+
+app.get('/buses/:placa', (req, res) => {
+    const { placa } = req.params;
+
+    const buses = leerBuses();
+    const bus = buses.buses.find(b => b.placa === placa);
+
+    if (!bus) {
+        return res.status(404).send('Bus no encontrado.');
+    }
+
+    res.status(200).json(bus);
+});
+
+app.listen(port, () => {
+    console.log(`Servidor escuchando en http://localhost:${port}`);
 });
