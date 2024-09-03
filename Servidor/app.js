@@ -2,12 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-
 const app = express();
-const port = 3000;
+const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
+const ip = config.ip;
+const port = config.port;
 
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, '../Cliente'))); // Servir archivos estáticos desde la carpeta del cliente
+app.use(express.static(path.join(__dirname, '../Cliente'))); 
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../Cliente/index.html'));
@@ -38,14 +39,12 @@ app.post('/buses', (req, res) => {
     let bus = buses.buses.find(b => b.placa === placa);
 
     if (bus) {
-        // El bus ya existe, actualizamos su hora de llegada
         bus.registros.push({
-            ordenRegistro: bus.registros.length + 1, // Incrementar el orden de registro
+            ordenRegistro: bus.registros.length + 1,
             horaLlegada: horaLlegada
         });
-        bus.ediciones += 1; // Incrementar el contador de ediciones
+        bus.ediciones += 1;
     } else {
-        // Registrar un nuevo bus
         buses.buses.push({
             placa: placa,
             registros: [{
@@ -88,6 +87,6 @@ app.get('/buses/:placa', (req, res) => {
     res.status(200).json(bus);
 });
 
-app.listen(port, () => {
-    console.log(`Servidor escuchando en http://localhost:${port}`);
+app.listen(port, ip, () => {
+    console.log(`Servidor escuchando en http://${ip}:${port}`);
 });
