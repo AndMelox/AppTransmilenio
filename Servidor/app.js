@@ -7,7 +7,7 @@ const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, '../Cliente'))); // Servir archivos estáticos desde la carpeta del cliente
+app.use(express.static(path.join(__dirname, '../Cliente')));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../Cliente/index.html'));
@@ -38,14 +38,14 @@ app.post('/buses', (req, res) => {
     let bus = buses.buses.find(b => b.placa === placa);
 
     if (bus) {
-        // El bus ya existe, actualizamos su hora de llegada
+        
         bus.registros.push({
-            ordenRegistro: bus.registros.length + 1, // Incrementar el orden de registro
+            ordenRegistro: bus.registros.length + 1, 
             horaLlegada: horaLlegada
         });
         bus.ediciones += 1; // Incrementar el contador de ediciones
     } else {
-        // Registrar un nuevo bus
+        
         buses.buses.push({
             placa: placa,
             registros: [{
